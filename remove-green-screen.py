@@ -27,12 +27,12 @@ while True:
     # convert BGR frame to LAB channel 
     LAB_frame = cv.cvtColor(frame, cv.COLOR_BGR2LAB) 
     a_channel = LAB_frame[..., 1] 
-    ret, threshold = cv.threshold(a_channel, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU) 
-    threshold_reverse = cv.bitwise_not(threshold) 
+    ret, mask = cv.threshold(a_channel, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU) 
+    mask_reverse = cv.bitwise_not(mask) 
 
     # update frame 
-    frame_without_bg = cv.bitwise_and(frame, frame, mask=threshold)
-    frame_with_new_bg = cv.bitwise_and(resize_background_img, resize_background_img, mask=threshold_reverse) 
+    frame_without_bg = cv.bitwise_and(frame, frame, mask=mask)
+    frame_with_new_bg = cv.bitwise_and(resize_background_img, resize_background_img, mask=mask_reverse) 
     output = cv.add(frame_without_bg, frame_with_new_bg) 
 
     cv.imshow(window_name, output) # show frame 
@@ -41,3 +41,36 @@ while True:
         print("exit") 
         break 
 cv.destroyAllWindows() 
+
+# Show output in diffrent methods 
+images = [
+    frame, 
+    LAB_frame, 
+    a_channel, 
+    mask, 
+    mask_reverse, 
+    frame_without_bg, 
+    frame_with_new_bg, 
+    output
+]
+titles = [
+    "Original frame", 
+    "LAB frame", 
+    "'A' channel",
+    "Mask", 
+    "Reverse Mask (bitwise not)", 
+    "Frame without background", 
+    "Frame with new background", 
+    "Finall output" 
+] 
+
+fig, axes = plt.subplots(4, 2, figsize=(15, 7)) 
+for ax, image, title in zip(axes.ravel(), images, titles): 
+    if image.ndim == 2: 
+        ax.imshow(image, cmap="gray")
+    else:
+        ax.imshow(image[..., ::-1]) 
+    ax.set_title(title) 
+    ax.axis("off")
+plt.tight_layout()
+plt.show() 
