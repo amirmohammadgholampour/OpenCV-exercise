@@ -16,28 +16,25 @@ background_img = cv.imread("images/balloon.png")
 frame_width = int(video_capture.get(cv.CAP_PROP_FRAME_WIDTH))
 frame_height = int(video_capture.get(cv.CAP_PROP_FRAME_HEIGHT))
 
+# resize background image 
+resize_background_img = cv.resize(background_img, (frame_width, frame_height)) 
 
 while True: 
     ret, frame = video_capture.read() # read frame and video capture
     if not ret: # if video is not, break loop 
         break 
-    hsv_frame = cv.cvtColor(frame, cv.COLOR_BGR2HSV) # convert bgr frame to hsv 
 
-    # resize background image 
-    resize_background_img = cv.resize(background_img, (frame_width, frame_height)) 
-
-    # create mask for 'green' background image
-    lower = np.array([40, 50, 50])
-    upper = np.array([70, 255, 255])
-    mask = cv.inRange(hsv_frame, lower, upper)
-    mask_reverse = cv.bitwise_not(mask) # reversed mask 
+    # convert BGR frame to LAB channel 
+    LAB_frame = cv.cvtColor(frame, cv.COLOR_BGR2LAB) 
+    a_channel = LAB_frame[..., 1] 
+    ret, threshold = cv.threshold(a_channel, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU) 
+    threshold_reverse = cv.bitwise_not(threshold) 
 
     # update frame 
-    frame_without_bg = cv.bitwise_and(frame, frame, mask=mask_reverse)
-    frame_with_new_bg = cv.bitwise_and(resize_background_img, resize_background_img, mask=mask) 
+    frame_without_bg = cv.bitwise_and(frame, frame, mask=threshold)
+    frame_with_new_bg = cv.bitwise_and(resize_background_img, resize_background_img, mask=threshold_reverse) 
     output = cv.add(frame_without_bg, frame_with_new_bg) 
 
-    
     cv.imshow(window_name, output) # show frame 
     key = cv.waitKey(50) 
     if key == ord("q"): # press "q" to exit 
