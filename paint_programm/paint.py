@@ -6,6 +6,7 @@ img = np.zeros((512, 512, 3), np.uint8)
 
 line_color = (0, 255, 0)
 drawing = False 
+clear = img.copy() 
 
 def brush_paint(event, x,y, flags, param): 
     global drawing
@@ -25,7 +26,7 @@ while True:
     cv.imshow(window_name, img) 
 
     key = cv.waitKey(1) 
-    
+
     # color changes config
     if key == ord("r"):
         line_color = (0, 0, 255)
@@ -36,10 +37,12 @@ while True:
     elif key == ord("w"):
         line_color = (255, 255, 255)
 
+    elif key == ord("z"): # reset
+        img = clear.copy()
+
     elif key == ord("q"):
         print("exit")
         break 
 
 cv.destroyAllWindows()
 plt.imshow(img[..., ::-1])
-plt.show()
